@@ -1,0 +1,177 @@
+get http://localhost:3000/user/
+
+###
+
+
+get http://localhost:3000/user/63ffd1ae0cc222ccc1a22bd5
+
+###
+
+Post http://localhost:3000/user
+Content-Type: application/json
+
+{
+        "username" : "salim",
+    "password": "labepierre",
+    "email": "ril@gmail.com",
+    "name": "falafel",
+    "surname": "fahlas",
+    "phoneNumber": "056585858521",
+    "address": "chrea",
+    "role": "user" 
+}
+
+      
+       
+###
+
+PATCH   http://localhost:3000/user/63ff44f11e1a55738bbd5e9d
+Content-Type: application/json
+
+{
+    "name": "imawawal",
+    "surname": "gliadiator"
+}
+
+
+###
+
+delete http://localhost:3000/user/63ffcfcd0cc222ccc1a22bc9
+Content-Type: application/json
+
+###
+
+
+
+// ------- -----------------------Crude of category ------------------------------------
+
+
+get http://localhost:3000/category/
+
+###
+
+
+get http://localhost:3000/category/6400698eec14d4cbb8cab14e
+
+###
+
+Post http://localhost:3000/category
+Content-Type: application/json
+
+{
+    "name": "sex"
+    
+}
+
+      
+       
+###
+
+PATCH   http://localhost:3000/category/640069aaec14d4cbb8cab150
+Content-Type: application/json
+
+{
+    "name": "biographies",
+    
+}
+
+
+###
+
+delete http://localhost:3000/category/64006c0c778729c2a4e69f99
+Content-Type: application/json
+
+
+
+###    
+       
+// ------- -----------------------Crude of books------------------------------------
+
+
+get http://localhost:3000/book/
+
+###
+
+
+get http://localhost:3000/book/6400b11d6c0faa0892a979ec
+
+
+###
+
+Post http://localhost:3000/book
+Content-Type: application/json
+
+{
+    "title" : "glory to almighty god allah",
+    "description": "allah akbar",
+    "publishedDate": "2021-10-22",
+    "pageCount": 600,
+    "author": "el khamidi",
+    "copiesCount": 5,
+    "aviabilityCount": 5      
+}
+      
+       
+###
+
+PATCH   http://localhost:3000/book/6400b1ff6c0faa0892a979f4
+Content-Type: application/json
+
+{
+    
+    "title" : "wining",
+    "description": "how to run your caereer like a boss"
+    
+}
+
+
+###
+
+delete http://localhost:3000/book/6400ad946c0faa0892a979e6
+Content-Type: application/json
+
+###
+
+
+// ------- -----------------------Crude of borrowing------------------------------------
+
+get http://localhost:3000/borrowing/
+
+###
+
+
+get http://localhost:3000/borrowing/6400b11d6c0faa0892a979ec
+
+
+###
+
+Post http://localhost:3000/borrowing
+Content-Type: application/json
+
+{
+    "Book": "la fragrue",
+    "User": "imawawal"
+}
+
+
+      
+       
+###
+
+PATCH   http://localhost:3000/borrowing/6400b1ff6c0faa0892a979f4
+Content-Type: application/json
+
+{
+    
+    "title" : "wining",
+    "description": "how to run your caereer like a boss"
+    
+}
+
+
+###
+
+delete http://localhost:3000/borrowing/6400ad946c0faa0892a979e6
+Content-Type: application/json
+
+###
