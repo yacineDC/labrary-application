@@ -32,9 +32,14 @@ app.use('/category', categoryRouter);
 const bookRouter= require ('./routes/book');
 app.use('/book', bookRouter);
 
-// seting up our routers to our routes files ()
+// seting up our routers to our routes files (borrowing)
 const borrowingRouter= require ('./routes/borrowing');
 app.use('/borrowing', borrowingRouter);
+
+
+// seting up our routers to our routes files ()
+// const commentRouter= require ('./routes/comment');
+// app.use('/comment', commentRouter);
 
 
 

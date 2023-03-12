@@ -43,7 +43,7 @@ Content-Type: application/json
 
 
 
-// ------- -----------------------Crude of category ------------------------------------
+// ------- -----------------------request category ------------------------------------
 
 
 get http://localhost:3000/category/
@@ -59,7 +59,7 @@ Post http://localhost:3000/category
 Content-Type: application/json
 
 {
-    "name": "sex"
+    "name": "physics"
     
 }
 
@@ -85,7 +85,7 @@ Content-Type: application/json
 
 ###    
        
-// ------- -----------------------Crude of books------------------------------------
+// ------- -----------------------request of books------------------------------------
 
 
 get http://localhost:3000/book/
@@ -102,13 +102,13 @@ Post http://localhost:3000/book
 Content-Type: application/json
 
 {
-    "title" : "glory to almighty god allah",
-    "description": "allah akbar",
-    "publishedDate": "2021-10-22",
-    "pageCount": 600,
-    "author": "el khamidi",
-    "copiesCount": 5,
-    "aviabilityCount": 5      
+    "title" : "hamlet",
+    "description": "amour, drame",
+    "publishedDate": "1982-01-04",
+    "pageCount": 460,
+    "author": "shakes peare",
+    "copiesCount": 6,
+    "aviabilityCount": 6      
 }
       
        
@@ -119,8 +119,13 @@ Content-Type: application/json
 
 {
     
-    "title" : "wining",
-    "description": "how to run your caereer like a boss"
+    "title" : "la drague",
+    "description": "comment draguer",
+    "publishedDate": "2003-04-14",
+    "pageCount": 600,
+    "author": "fhilip",
+    "copiesCount": 6,
+    "aviabilityCount": 6      
     
 }
 
@@ -133,14 +138,14 @@ Content-Type: application/json
 ###
 
 
-// ------- -----------------------Crude of borrowing------------------------------------
+// ------- -----------------------request of borrowing------------------------------------
 
 get http://localhost:3000/borrowing/
 
 ###
 
 
-get http://localhost:3000/borrowing/6400b11d6c0faa0892a979ec
+get http://localhost:3000/borrowing/640609d6264e7474fac591a6
 
 
 ###
@@ -149,29 +154,45 @@ Post http://localhost:3000/borrowing
 Content-Type: application/json
 
 {
-    "Book": "la fragrue",
-    "User": "imawawal"
+    "book": "6400af956c0faa0892a979e8",
+    "borrower": "63ffd1ae0cc222ccc1a22bd5"
 }
 
-
-      
-       
 ###
 
-PATCH   http://localhost:3000/borrowing/6400b1ff6c0faa0892a979f4
+Post http://localhost:3000/borrowing/return
 Content-Type: application/json
 
 {
+    "book": "640cb6cb331aa049404851a6",
+    "borrower": "63ff44f11e1a55738bbd5e9d"
+}
     
-    "title" : "wining",
-    "description": "how to run your caereer like a boss"
-    
+       
+###
+
+// to replace a borrower 
+
+PATCH   http://localhost:3000/borrowing/640cb7e3331aa049404851ac
+Content-Type: application/json
+
+{
+    "book" : "6400b1ff6c0faa0892a979f4",
+    "borrower": "63ffd1ae0cc222ccc1a22bd5",
+    # "date_borrowed": "2023-03-10",
+    # "date_returned": "2023-03-11"
+       
 }
 
 
 ###
 
-delete http://localhost:3000/borrowing/6400ad946c0faa0892a979e6
+// to not be used as it doesn't take into acount bookaviability
+
+delete http://localhost:3000/borrowing/640cb7e3331aa049404851ac
 Content-Type: application/json
 
 ###
+
+
+// to not be used as it doesn't take into acount bookaviability
