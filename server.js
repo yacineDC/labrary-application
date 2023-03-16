@@ -37,10 +37,9 @@ const borrowingRouter= require ('./routes/borrowing');
 app.use('/borrowing', borrowingRouter);
 
 
-// seting up our routers to our routes files ()
-// const commentRouter= require ('./routes/comment');
-// app.use('/comment', commentRouter);
-
+// seting up our routers to our routes files (comment)
+const commentRouter= require ('./routes/comment');
+app.use('/comment', commentRouter);
 
 
 app.listen(3000, () => console.log('Server Started'));

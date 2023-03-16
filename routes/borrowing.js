@@ -1,61 +1,123 @@
-const express = require ('express')
+const express = require ('express');
 //geting the router from express
-const router = express.Router()
-const Borrowing = require ('../models/borrowing')
-const Book = require ("../models/book")
-const User = require ("../models/user")
-const moment = require ("moment")
+const router = express.Router();
+const Borrowing = require ('../models/borrowing');
+const Book = require ("../models/book");
+const User = require ("../models/user");
+const { addDays } = require('date-fns');
+// const moment = require ("moment");
 
-// Geting all 
+// Get all borrowings
 router.get('/', async (req, res) => {
-try {
-    const Borrowings = await Borrowing.find()
-    res.json(Borrowings)
-} catch (err) {
-  res.status (500).json({message: err.message})  
-}
-})
+  try {
+    const borrowings = await Borrowing.find();
+    res.json(borrowings);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
 
-//Getting one 
+// Get one borrowing
 router.get('/:id', getBorrowing, (req, res) => {
-    res.json(res.borrowing)
-})
+  res.json(res.borrowing);
+});
 
-//Creating one 
-
+// Create a new borrowing
 router.post('/', async (req, res) => {
-    try {
-        const book = await Book.findById(req.body.book);
-        if (!book) {
-            return res.status(404).json({ message: 'Le livre n\'a pas été trouvé' });
-        }
-        if (book.aviabilityCount < 1) {
-            return res.status(400).json({ message: 'Il n\'y a plus de copies disponibles pour ce livre' });
-        }
+  console.log("new borrowing");
+  const userId = req.body.userId;
+  const bookId = req.body.bookId;
 
-        const user = await User.findById(req.body.borrower);
-        if (!user) {
-            return res.status(404).json({ message: 'L\'utilisateur n\'a pas été trouvé' });
-        }
-        const borrowings = await Borrowing.find({ borrower: user._id, date_borrowed: { $gte: moment().subtract(1, 'month') } });
+  try {
+    // Check if the user has already borrowed 3 books this month
+    const currentDate = new Date();
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    const borrowingsCount = await Borrowing.countDocuments({
+      user: userId,
+      startDate: { $gte: startOfMonth, $lte: endOfMonth },
+      returnDate: { $exists: false },
+    });
 
-        if (borrowings.length >= 3) {
-            return res.status(400).json({ message: 'L\'utilisateur a déjà emprunté 3 livres ce mois-ci' });
-        }
-
-        const newBorrowing = new Borrowing({
-            book: book._id,
-            borrower: user._id
-        });
-        await newBorrowing.save();
-
-        book.aviabilityCount--;
-        await book.save();
-
-        res.status(201).json(newBorrowing);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
+    if (borrowingsCount >= 3) {
+      return res.status(400).send('Vous avez atteint la limite d\'emprunts pour ce mois');
     }
+
+    // Check if the user has already borrowed this book
+    const existingBorrowing = await Borrowing.findOne({
+      user: userId,
+      book: bookId,
+      returnDate: { $exists: false },
+    });
+
+    if (existingBorrowing) {
+      return res.status(400).send('Vous avez déjà emprunté ce livre');
+    }
+
+    // Check if the book is available
+    const book = await Book.findById(bookId);
+
+    if (!book || book.aviabilityCount <= 0) {
+      return res.status(400).send('Le livre n\'est pas disponible pour le moment');
+    }
+
+    // Calculate due date and create new borrowing
+    const dueDate = addDays(new Date(), 25);
+    const borrowing = new Borrowing({
+      user: userId,
+      book: bookId,
+      dueDate,
+    });
+    await borrowing.save();
+
+    // Update book's available copies count
+    // book.copiesCount--;
+    book.aviabilityCount--;
+    await book.save();
+
+    return res.status(200).json(borrowing);
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
+});
+
+
+// Renew a borrowing
+router.post('/renew', async (req, res) => {
+  const borrowingId = req.body.borrowingId;
+
+  try {
+    // Check if the borrowing exists and is not returned
+    const borrowing = await Borrowing.findOne({
+      _id: borrowingId,
+      returnDate: { $exists: false },
+    });
+
+    if (!borrowing) {
+      return res.status(400).send('L\'emprunt est introuvable ou a déjà été retourné');
+    }
+
+    // Check if the borrowing is not already renewed
+    if (borrowing.renewed) {
+      return res.status(400).send('Vous avez déjà renouvelé cet emprunt');
+    }
+
+    // Check if the borrowing is not overdue
+    const currentDate = new Date();
+    if (currentDate > borrowing.dueDate) {
+      return res.status(400).send('L\'emprunt est en retard et ne peut pas être renouvelé');
+    }
+
+    // Renew the borrowing
+    const newDueDate = addDays(borrowing.dueDate, 25);
+    borrowing.dueDate = newDueDate;
+    borrowing.renewed = true;
+    await borrowing.save();
+
+    return res.status(200).json(borrowing);
+  } catch (error) {
+    return res.status(500).send(error.message);
+  }
 });
 
  
@@ -65,7 +127,7 @@ router.post('/return', async (req, res) => {
       // Vérifier si l'utilisateur a emprunté le livre
       const borrowing = await Borrowing.findOneAndDelete({ 
         book: req.body.book,
-        borrower: req.body.borrower,
+        user: req.body.user,
         date_returned: null 
       });
 
@@ -88,38 +150,15 @@ router.post('/return', async (req, res) => {
       res.status(500).json({ message: 'Une erreur s\'est produite lors du retour du livre.' });
     }
   });
-  
 
-
-//Creating one old method
-
-// router.post('/', async (req, res) => {
-//     const newBook = new Borrowing({
-//         title:req.body.title,
-//         description: req.body.description,
-//         publishedDate: req.body.publishedDate,
-//         pageCount: req.body.pageCount,
-//         author: req.body.author,
-//         copiesCount: req.body.copiesCount,
-//         aviabilityCount: req.body.aviabilityCount,
-    
-//     })
-//     try{
-//         await newBook.save()
-//         res.status(201).json(newBook)
-
-//     } catch (err) {
-//         res.status(400).json({message:err.message})
-//     }
-// })
 
 //updating one
 router.patch('/:id', getBorrowing, async (req, res) => {
     if (req.body.book != null) { 
         res.borrowing.book = req.body.book
     }
-    if (req.body.borrower != null) { 
-        res.borrowing.borrower = req.body.borrower
+    if (req.body.user != null) { 
+        res.borrowing.user = req.body.user
     }
     if (req.body.publishedDate != null) { 
         res.borrowing.date_borrowed = req.body.date_borrowed
@@ -166,6 +205,83 @@ async function getBorrowing (req, res, next) {
 
 }
 
+// displayActivityHistor need to change the borrowing model
+
+async function displayActivityHistory(userId) {
+  try {
+    const user = await User.findById(userId);
+    console.log(`Activity history for user ${user.name}:`);
+    console.log(user.activity);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+router.get('/:userId/activity', async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    await displayActivityHistory(userId);
+    res.sendStatus(200);
+  } catch (error) {
+    console.error(error);
+    res.sendStatus(500);
+  }
+});
+
+// --------------------------BorrowingHistory------------------
+
+
+const { getUserBorrowingHistory } = require('./borrowing');
+
+router.get('/users/:userId/borrowing-history', async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const borrowingHistory = await getUserBorrowingHistory(userId);
+    res.status(200).json(borrowingHistory);
+  } catch (error) {
+    res.status(500).json({ message: 'Error retrieving borrowing history', error: error.message });
+  }
+});
+
+
+
+
 
 
 module.exports= router
+
+//Creating one borrowing  (old method)
+// router.post('/', async (req, res) => {
+//     try {
+//         const book = await Book.findById(req.body.book);
+//         if (!book) {
+//             return res.status(404).json({ message: 'Le livre n\'a pas été trouvé' });
+//         }
+//         if (book.aviabilityCount < 1) {
+//             return res.status(400).json({ message: 'Il n\'y a plus de copies disponibles pour ce livre' });
+//         }
+
+//         const user = await User.findById(req.body.user);
+//         if (!user) {
+//             return res.status(404).json({ message: 'L\'utilisateur n\'a pas été trouvé' });
+//         }
+//         const borrowings = await Borrowing.find({ user: user._id, date_borrowed: { $gte: moment().subtract(1, 'month') } });
+
+//         if (borrowings.length >= 3) {
+//             return res.status(400).json({ message: 'L\'utilisateur a déjà emprunté 3 livres ce mois-ci' });
+//         }
+
+//         const newBorrowing = new Borrowing({
+//             book: book._id,
+//             user: user._id
+//         });
+//         await newBorrowing.save();
+
+//         book.aviabilityCount--;
+//         await book.save();
+
+//         res.status(201).json(newBorrowing);
+//     } catch (err) {
+//         res.status(500).json({ message: err.message });
+//     }
+// });

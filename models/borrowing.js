@@ -1,27 +1,42 @@
 const mongoose = require('mongoose');
 
-// Définition du modèle de la collection Borrowing
-const BorrowingSchema = new mongoose.Schema({
-  book: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Book', // référence la collection 'books'
-    required: true,
+const borrowingSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      required: true,
+    },
+    book: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Book',
+      required: true,
+    },
+    startDate: {
+      type: Date,
+      required: true,
+      default: Date.now,
+    },
+    dueDate: {
+      type: Date,
+      required: true,
+    },
+    returnDate: {
+      type: Date,
+    },
+    renewed: {
+      type: Boolean,
+      default: false,
+    },
+    renewalDate: {
+      type: Date,
+    },
+    renewalCount: {
+      type: Number,
+      default: 0,
+    },
   },
-  borrower: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // référence la collection 'users'
-    required: true,
-  },
-  date_borrowed: {
-    type: Date,
-    default: Date.now,
-  },
-  date_returned: {
-    type: Date,
-    default: null,
-  },
-});
+  { timestamps: true }
+);
 
-const Borrowing = mongoose.model('Borrowing', BorrowingSchema);
-
-module.exports = Borrowing;
+module.exports = mongoose.model('Borrowing', borrowingSchema);

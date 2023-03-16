@@ -3,7 +3,7 @@ get http://localhost:3000/user/
 ###
 
 
-get http://localhost:3000/user/63ffd1ae0cc222ccc1a22bd5
+get http://localhost:3000/user/63ff2e3bc11f6cb3a89619bd
 
 ###
 
@@ -59,19 +59,18 @@ Post http://localhost:3000/category
 Content-Type: application/json
 
 {
-    "name": "physics"
+    "name": "to be deleted"
     
 }
 
-      
-       
+
 ###
 
-PATCH   http://localhost:3000/category/640069aaec14d4cbb8cab150
+PATCH   http://localhost:3000/category/64119e55cedf640220abe646
 Content-Type: application/json
 
 {
-    "name": "biographies",
+    "name": "spiritual"
     
 }
 
@@ -81,19 +80,18 @@ Content-Type: application/json
 delete http://localhost:3000/category/64006c0c778729c2a4e69f99
 Content-Type: application/json
 
-
-
-###    
-       
+        
 // ------- -----------------------request of books------------------------------------
 
 
+###  
+
 get http://localhost:3000/book/
+
 
 ###
 
-
-get http://localhost:3000/book/6400b11d6c0faa0892a979ec
+get http://localhost:3000/book/6400af956c0faa0892a979e8
 
 
 ###
@@ -102,11 +100,11 @@ Post http://localhost:3000/book
 Content-Type: application/json
 
 {
-    "title" : "hamlet",
+    "title" : "hamlet6525",
     "description": "amour, drame",
     "publishedDate": "1982-01-04",
     "pageCount": 460,
-    "author": "shakes peare",
+    "author": "shakes9562 peare",
     "copiesCount": 6,
     "aviabilityCount": 6      
 }
@@ -135,28 +133,44 @@ Content-Type: application/json
 delete http://localhost:3000/book/6400ad946c0faa0892a979e6
 Content-Type: application/json
 
-###
-
-
 // ------- -----------------------request of borrowing------------------------------------
 
+
+###
+
 get http://localhost:3000/borrowing/
+ 
+
+###
+get http://localhost:3000/borrowing/641192698484c64bd9c5bd6f
+
+
+//   -------- create a new borrowing (new method)--------- 
 
 ###
 
-
-get http://localhost:3000/borrowing/640609d6264e7474fac591a6
-
-
-###
-
-Post http://localhost:3000/borrowing
+POST http://localhost:3000/borrowing
 Content-Type: application/json
 
 {
-    "book": "6400af956c0faa0892a979e8",
-    "borrower": "63ffd1ae0cc222ccc1a22bd5"
+    "userId": "63ffd1ae0cc222ccc1a22bd5",
+    "bookId": "6400b1ff6c0faa0892a979f4"
 }
+ 
+//   ------ ----- renouvler un emprun new method--------- 
+
+###
+
+POST http://localhost:3000/borrowing/renew
+Content-Type: application/json
+
+{
+    "borrowingId": "641196838484c64bd9c5bd76"
+
+}
+
+
+//   ------  to return a borrowing
 
 ###
 
@@ -164,35 +178,122 @@ Post http://localhost:3000/borrowing/return
 Content-Type: application/json
 
 {
-    "book": "640cb6cb331aa049404851a6",
-    "borrower": "63ff44f11e1a55738bbd5e9d"
+    "book": "641178a15e6276b5d3b7a061",
+    "user": "63ffd1ae0cc222ccc1a22bd5"
 }
     
-       
-###
+  // ---to replace the borrower in borrowing (meanigless)     
 
-// to replace a borrower 
+###
 
 PATCH   http://localhost:3000/borrowing/640cb7e3331aa049404851ac
 Content-Type: application/json
 
 {
     "book" : "6400b1ff6c0faa0892a979f4",
-    "borrower": "63ffd1ae0cc222ccc1a22bd5",
-    # "date_borrowed": "2023-03-10",
-    # "date_returned": "2023-03-11"
-       
+    "borrower": "63ffd1ae0cc222ccc1a22bd5"
+  
 }
 
+//  to romove borrowing ( usless to not be used as it doesn't take into acount bookaviability)
 
 ###
-
-// to not be used as it doesn't take into acount bookaviability
 
 delete http://localhost:3000/borrowing/640cb7e3331aa049404851ac
 Content-Type: application/json
 
+
+//  -----------------------request comments------------------------------
+
+###
+
+POST http://localhost:3000/comment
+Content-Type: application/json
+
+{
+"text": " awsome",
+"user": "63ff2e3bc11f6cb3a89619bd",
+"book": "63ff44f11e1a55738bbd5e9d",
+"parentComment": null
+}
+
+###//  Récupération d un commentaire pour un livre par (Id comentaire)
+
+GET http://localhost:3000/comment/6411a06ccedf640220abe650
+Content-Type: application/json
+
+
+
+//  Récupération des commentaires pour un livre donné:
+
+###
+
+GET http://localhost:3000/comment/book/63ff2e3bc11f6cb3a89619bd
+Content-Type: application/json
+
+###
+
+//  Obtenir tous les commentaires d'un utilisateur:
+
+###
+
+GET http://localhost:3000/comment/user/63ffd1ae0cc222ccc1a22bd5
+Content-Type: application/json
+
+###
+GET http://localhost:3000/comment/book/63ff2e3bc11f6cb3a89619bd
+Content-Type: application/json
+
+//  Répondre à un commentaires pour un livre donné:
+
+###
+
+POST http://localhost:3000/comment/6411a06ccedf640220abe650/reply
+Content-Type: application/js
+
+{
+"text": "Je suis d'accord, ce livre est incroyable!",
+"user": "63ff44f11e1a55738bbd5e9d",
+"book": "63ff2e3bc11f6cb3a89619bd",
+"parentComment": "6411a06ccedf640220abe650"
+}
+
+//  Supprimer un commentaire: (par if comment)
+
+
+###
+
+DELETE http://localhost:3000/comment/64130826944aa00b27067ac1
+Content-Type: application/json
+
+
+
+
+//  -----------------------request avtivity history------------------------
+
+
+
+
 ###
 
 
-// to not be used as it doesn't take into acount bookaviability
+GET http://localhost:3000/borrowing/63ff44f11e1a55738bbd5e9d/activity
+Content-Type: application/json
+
+
+
+
+
+// create a new borrowing (old function)
+
+# Post http://localhost:3000/localhost:3000/borrowing
+# Content-Type: application/json
+
+# {
+#     "book": "6400ad936c0faa0892a979e4",
+#     "user": "63ff2e3bc11f6cb3a89619bd"
+# }
+
+
+
+

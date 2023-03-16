@@ -1,55 +1,107 @@
 const express = require('express');
 const router = express.Router();
 const Comment = require('../models/comment');
-const Book = require('../models/book');
-// const auth = require('../middleware/auth');
+const User = require('../models/user');
+const Book = require ("../models/book");
 
-// Endpoint pour créer un commentaire sur un livre
-router.post('/books/:bookId/comments', auth, async (req, res) => {
+// Créer un nouveau commentaire
+router.post('/', async (req, res) => {
+
   try {
-    const book = await Book.findById(req.params.bookId);
-    if (!book) {
-      return res.status(404).send({ message: 'Book not found' });
-    }
-    const comment = new Comment({
-      text: req.body.text,
-      user: req.user._id,
-      book: book._id
-    });
+    const comment = new Comment(req.body);
     await comment.save();
-    res.status(201).send(comment);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: 'Internal server error' });
+    res.status(201).json(comment);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 });
 
-// Endpoint pour récupérer les commentaires d'un livre
-router.get('/books/:bookId/comments', async (req, res) => {
+// Obtenir tous les commentaires pour un livre
+router.get('/book/:bookId', async (req, res) => {
   try {
     const comments = await Comment.find({ book: req.params.bookId })
-      .populate('user', 'username')
-      .sort('-createdAt')
-      .exec();
-    res.status(200).send(comments);
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: 'Internal server error' });
+      .populate('user')
+      .populate('parentComment')
+      .populate({
+        path: 'parentComment',
+        populate: { path: 'user' }
+      });
+    res.json(comments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
 
-// Endpoint pour supprimer un commentaire
-router.delete('/comments/:commentId', auth, async (req, res) => {
+// Obtenir tous les commentaires pour un utilisateur
+router.get('/user/:userId', async (req, res) => {
   try {
-    const comment = await Comment.findOneAndDelete({ _id: req.params.commentId, user: req.user._id });
-    if (!comment) {
-      return res.status(404).send({ message: 'Comment not found' });
-    }
-    res.status(200).send({ message: 'Comment deleted successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send({ message: 'Internal server error' });
+    const comments = await Comment.find({ user: req.params.userId })
+      .populate('book')
+      .populate('parentComment')
+      .populate({
+        path: 'parentComment',
+        populate: { path: 'user' }
+      });
+    res.json(comments);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 });
+
+// Obtenir un commentaire spécifique par ID du commentaire
+router.get('/:id', getComment, (req, res) => {
+  res.json(res.comment);
+});
+
+// Supprimer un commentaire
+router.delete('/:id', getComment, async (req, res) => {
+  try {
+    await res.comment.remove();
+    res.json({ message: 'Commentaire supprimé' });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
+// Répondre à un commentaire
+router.post('/:id/reply', getComment, async (req, res) => {
+  try {
+    const reply = new Comment(req.body);
+    reply.book = res.comment.book;
+    reply.parentComment = res.comment._id;
+    reply.user = req.user._id;
+    await reply.save();
+    res.status(201).json(reply);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+
+// Middleware pour obtenir un commentaire par ID
+async function getComment(req, res, next) {
+  let comment;
+  try {
+    comment = await Comment.findById(req.params.id);
+    if (comment == null) {
+      return res.status(404).json({ message: 'Commentaire introuvable' });
+    }
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+  res.comment = comment;
+  next();
+}
+
+
+router.get('/example', (req, res) => {
+  console.log(req); // log the entire request object
+  console.log(req.user); // log the user object
+  res.send('Example route');
+});
+
+
+
+
 
 module.exports = router;
